@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArmGym Tracker — Приложение для Армрестлеров</title>
+    
+    <!-- Подключение манифеста для поддержки PWA (установки на телефон/ПК) -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#121214">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <!-- ИКОНКА ПРИЛОЖЕНИЯ (FAVICON) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💪</text></svg>">
+    
+    <style>
+        :root {
+            --bg-color: #121214;
+            --card-bg: #1e1e24;
+            --primary: #ff4757;
+            --primary-hover: #e84118;
+            --accent: #ffa502;
+            --text-main: #ffffff;
+            --text-muted: #a4b0be;
+            --border: #2f3542;
+            --win-color: #2ecc71;
+            --blue-color: #3498db;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding-bottom: 160px;
+        }
+
+        /* ПЛАШКА ВЛАДЕЛЬЦА SEVATANKARM */
+        .owner-badge {
+            background-color: #0f0f12;
+            color: var(--accent);
+            text-align: center;
+            font-size: 0.75rem;
+            padding: 4px 0;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-weight: bold;
+            border-bottom: 1px solid var(--border);
+        }
+
+        header {
+            background: linear-gradient(135deg, #2f3542, #1e1e24);
+            padding: 20px;
+            text-align: center;
+            border-bottom: 3px solid var(--primary);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        header h1 span {
+            color: var(--primary);
+        }
+
+        /* БЛОКИ ДЛЯ РЕКЛАМЫ */
+        .ad-space {
+            background-color: #1a1a1f;
+            border: 2px dashed #3a3a45;
+            border-radius: 8px;
+            color: var(--text-muted);
+            text-align: center;
+            padding: 15px;
+            font-size: 0.85rem;
+            margin: 15px auto;
+            max-width: 600px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-style: italic;
+        }
+
+        .ad-bottom-fixed {
+            position: fixed;
+            bottom: 60px;
+            left: 0;
+            right: 0;
+            background-color: #1a1a1f;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            padding: 10px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            z-index: 999;
+            height: 50px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 10px auto;
+            padding: 0 15px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+        }
+
+        .card h2 {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--accent);
+            padding-left: 10px;
+            text-transform: uppercase;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 12px;
+            background-color: #2f3542;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        select:focus, input:focus {
+            border-color: var(--primary);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .list-item {
+            background-color: #2f3542;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-right: 4px solid var(--primary);
+        }
+
+        .list-item-info div {
+            font-weight: bold;
+        }
+
+        .list-item-info span {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            display: block;
+            margin-top: 2px;
+        }
+
+        .list-item-weight {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--accent);
+            text-align: right;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+        .badge-left { background-color: #3498db; color: white; }
+        .badge-right { background-color: #2ecc71; color: white; }
+        .badge-style { background-color: #9b59b6; color: white; }
+
+        /* ТАЙМЕР */
+        .timer-display {
+            font-size: 3rem;
+            text-align: center;
+            font-weight: bold;
+            margin: 15px 0;
+            font-family: monospace;
+            color: var(--accent);
+        }
+
+        .timer-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-sec {
+            background-color: #747d8c;
+        }
+
+        /* НАВИГАЦИЯ */
+        .nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--card-bg);
+            display: flex;
+            justify-content: space-around;
+            border-top: 1px solid var(--border);
+            z-index: 1000;
+        }
+
+        .nav-item {
+            padding: 12px 5px;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            flex-grow: 1;
+            text-align: center;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            border-top: 3px solid var(--primary);
+            background-color: rgba(255, 71, 87, 0.05);
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .info-block {
+            margin-bottom: 15px;
+            padding: 12px;
+            background: #2f3542;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        .info-block strong {
+            color: var(--accent);
+        }
+        
+        .empty-message {
+            color: var(--text-muted);
+            text-align: center;
+            font-style: italic;
+            padding: 10px 0;
+        }
+
+        /* МИНИ-ИГРА */
+        .game-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .game-col-title {
+            grid-column: span 2;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: var(--accent);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 5px;
+        }
+
+        .battle-log {
+            background-color: #121214;
+            padding: 10px;
+            border-radius: 6px;
+            font-family: monospace;
+            max-height: 250px;
+            overflow-y: auto;
+            font-size: 0.85rem;
+            border: 1px solid var(--border);
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            line-height: 1.3;
+        }
+
+        .log-win { color: var(--win-color); font-weight: bold; }
+        .log-fail { color: var(--primary); font-weight: bold; }
+
+        /* СГОНКА ВЕСА */
+        .weight-day {
+            background-color: #2f3542;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--blue-color);
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+        
+        .weight-day.completed {
+            border-left-color: var(--win-color);
+            opacity: 0.7;
+        }
+        
+        .weight-day input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-top: 2px;
+            cursor: pointer;
+        }
+
+        .weight-day-text h3 {
+            font-size: 1rem;
+            color: var(--accent);
+            margin-bottom: 3px;
+        }
+
+        .weight-day-text p {
+            font-size: 0.85rem;
+            color: var(--text-main);
+            line-height: 1.3;
+        }
+
+        /* КАЛЕНДАРЬ СОРЕВНОВАНИЙ */
+        .comp-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .comp-table th, .comp-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .comp-table th {
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .status-badge {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .status-upcoming { background-color: var(--accent); color: #000; }
+        .status-passed { background-color: #57606f; color: #fff; }
+    </style>
+</head>
+<body>
+
+    <!-- ИНДИКАТОР ВЛАДЕЛЬЦА СВЕРХУ -->
+    <div class="owner-badge">&copy; 2026 Разработано &amp; Принадлежит Танкееву Всеволоду. Все права защищены.</div>
+
+    <header>
+        <h1>ArmGym <span>Tracker</span></h1>
+    </header>
+
+    <!-- ВЕРХНЕЕ МЕСТО ДЛЯ РЕКЛАМЫ -->
+    <div class="ad-space">
+        Место для рекламы (Верхний баннер)
+    </div>
+
+    <div class="container">
+       
+        <!-- СТРАНИЦА 1: ТРЕНИРОВКА -->
+        <div id="page-workout" class="page active">
+            <div class="card">
+                <h2>Запись подхода</h2>
+                <form id="workout-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="date-picker">Дата тренировки</label>
+                            <input type="date" id="date-picker" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="hand">Рука</label>
+                            <select id="hand">
+                                <option value="Правая">Правая (R)</option>
+                                <option value="Левая">Левая (L)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="style">Стиль / Техника борьбы</label>
+                        <select id="style">
+                            <option value="Верх">Верх (Верт. движение)</option>
+                            <option value="Крюк">Крюк (Супинация)</option>
+                            <option value="Клюшка">Клюшка (Глубокий крюк)</option>
+                            <option value="Кингсмув">Кингсмув (Открытый угол)</option>
+                            <option value="Трицепс">Трицепс (Давление плечом)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="exercise">Специализированный вектор</label>
+                        <select id="exercise">
+                            <option value="Пронатор (Натяг)">Пронатор (Натяг через лямку)</option>
+                            <option value="Луч (Восхождение)">Луч (Отведение кисти)</option>
+                            <option value="Супинатор (Венчик)">Супинатор (Работа в бок)</option>
+                            <option value="Сгибание кисти">Сгибание кисти (Ручка/Гриф)</option>
+                            <option value="Статическое удержание">Статика (Угол бицепса)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="weight">Вес (кг)</label>
+                            <input type="number" id="weight" step="0.5" placeholder="35" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="reps">Повторы / Сек.</label>
+                            <input type="number" id="reps" placeholder="6" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn">Записать подход</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>История подходов по календарю</h2>
+                <div id="workout-list"></div>
+            </div>
+        </div>
+
+        <!-- СТРАНИЦА 2: СИМУЛЯТОР БОЯ -->
+        <div id="page-game" class="page">
+            <div class="card">
+                <h2>Симулятор поединка</h2>
+                <form id="game-form">
+                    <div class="game-grid">
+                        <div class="game-col-title">СПОРТСМЕН</div>
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label for="p1-style">Стиль борьбы</label>
+                            <select id="p1-style">
+                                <option value="Верх">Верх</option>
+                                <option value="Крюк">Крюк</option>
+                                <option value="Клюшка">Клюшка</option>
+                                <option value="Кингсмув">Кингсмув</option>
+                                <option value="Трицепс">Трицепс</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>Пронатор (кг)</label><input type="number" id="p1-pron" value="30" required></div>
+                        <div class="form-group"><label>Луч (кг)</label><input type="number" id="p1-ray" value="25" required></div>
+                        <div class="form-group"><label>Кисть (кг)</label><input type="number" id="p1-wrist" value="35" required></div>
+                        <div class="form-group"><label>Бок (кг)</label><input type="number" id="p1-side" value="40" required></div>
+                    </div>
+
+                    <div class="game-grid">
+                        <div class="game-col-title">СОПЕРНИК</div>
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label for="p2-style">Стиль борьбы</label>
+                            <select id="p2-style">
+                                <option value="Крюк">Крюк</option>
+                                <option value="Верх">Верх</option>
+                                <option value="Клюшка">Клюшка</option>
+                                <option value="Кингсмув">Кингсмув</option>
+                                <option value="Трицепс">Трицепс</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>Пронатор (кг)</label><input type="number" id="p2-pron" value="28" required></div>
+                        <div class="form-group"><label>Луч (кг)</label><input type="number" id="p2-ray" value="23" required></div>
+                        <div class="form-group"><label>Кисть (кг)</label><input type="number" id="p2-wrist" value="32" required></div>
+                        <div class="form-group"><label>Бок (кг)</label><input type="number" id="p2-side" value="38" required></div>
+                    </div>
+
+                    <button type="submit" class="btn" style="background-color: var(--accent);">Начать поединок!</button>
+                </form>
+            </div>
+
+            <div class="card" id="battle-result-card" style="display:none;">
+                <h2>Ход поединка</h2>
+                <div class="battle-log" id="battle-log"></div>
+            </div>
+        </div>
+
+        <!-- СТРАНИЦА 3: СГОНКА ВЕСА (14 ДНЕЙ) -->
+        <div id="page-weight" class="page">
+            <div class="card">
+                <h2>Сгонка веса (План на 14 дней)</h2>
+                <div class="info-block">
+                    Грамотный подвод к весовой категории. Завершайте каждый день, ставя галочку для отслеживания прогресса.
+                </div>
+                <div id="weight-plan-container"></div>
+            </div>
+        </div>
+
+        <!-- СТРАНИЦА 4: КАЛЕНДАРЬ ТУРНИРОВ -->
+        <div id="page-events" class="page">
+            <div class="card">
+                <h2>Календарь соревнований 2026</h2>
+                <div style="overflow-x:auto;">
+                    <table class="comp-table">
+                        <thead>
+                            <tr>
+                                <th>Дата</th>
+                                <th>Турнир / Локация</th>
+                                <th>Статус</th>
+                            </tr>
+                        </thead>
+                        <tbody id="events-table-body">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- СТРАНИЦА 5: ТАЙМЕР -->
+        <div id="page-timer" class="page">
+            <div class="card">
+                <h2>Секундомер статики</h2>
+                <div class="info-block">
+                    Рабочий статический подход в армрестлинге длится <strong>10–15 секунд</strong>. Фокусируйтесь на жестком удержании рабочего угла.
+                </div>
+                <div class="timer-display" id="timer-display">00:00.00</div>
+                <div class="timer-controls">
+                    <button class="btn" id="btn-start-stop">Старт</button>
+                    <button class="btn btn-sec" id="btn-reset">Сброс</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- НИЖНЕЕ ФИКСИРОВАННОЕ МЕСТО ДЛЯ РЕКЛАМЫ -->
+    <div class="ad-bottom-fixed">
+        Рекламный блок (sevatankarm network)
+    </div>
+
+    <!-- НАВИГАЦИЯ -->
+    <div class="nav-bar">
+        <div class="nav-item active" data-page="page-workout"><span>🏋️‍♂️</span>Трен</div>
+        <div class="nav-item" data-page="page-game"><span>🖐️</span>Бой</div>
+        <div class="nav-item" data-page="page-weight"><span>📉</span>Вес</div>
+        <div class="nav-item" data-page="page-events"><span>📅</span>Матчи</div>
+        <div class="nav-item" data-page="page-timer"><span>⏱️</span>Таймер</div>
+    </div>
+
+    <script>
+        // --- РЕГИСТРАЦИЯ SERVICE WORKER (ОФЛАЙН РЕЖИМ ПРИ ЗАПУСКЕ НА СЕРВЕРЕ/ХОСТИНГЕ) ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Service Worker успешно зарегистрирован!', reg.scope))
+                    .catch(err => console.log('Ошибка регистрации Service Worker:', err));
+            });
+        }
+
+        // --- 1. НАВИГАЦИЯ ---
+        const navItems = document.querySelectorAll('.nav-item');
+        const pages = document.querySelectorAll('.page');
+
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                navItems.forEach(nav => nav.classList.remove('active'));
+                pages.forEach(page => page.classList.remove('active'));
+
+                item.classList.add('active');
+                const pageId = item.getAttribute('data-page');
+                document.getElementById(pageId).classList.add('active');
+            });
+        });
+
+        // --- 2. КАЛЕНДАРЬ И ЛОКАЛЬНАЯ БАЗА ТРЕНИРОВОК ---
+        const datePicker = document.getElementById('date-picker');
+        const workoutForm = document.getElementById('workout-form');
+        const workoutList = document.getElementById('workout-list');
+
+        const today = new Date().toISOString().split('T')[0];
+        datePicker.value = today;
+
+        let db = JSON.parse(localStorage.getItem('armgym_records')) || [];
+
+        function renderRecords() {
+            workoutList.innerHTML = '';
+            const selectedDate = datePicker.value;
+            const filtered = db.filter(item => item.date === selectedDate);
+
+            if (filtered.length === 0) {
+                workoutList.innerHTML = '<div class="empty-message">В этот день тренировок не найдено</div>';
+                return;
+            }
+
+            filtered.forEach((item) => {
+                const handBadgeClass = item.hand === 'Левая' ? 'badge-left' : 'badge-right';
+                const div = document.createElement('div');
+                div.className = 'list-item';
+                div.innerHTML = `
+                    <div class="list-item-info">
+                        <div>${item.exercise}</div>
+                        <span>
+                            <span class="badge ${handBadgeClass}">${item.hand.substring(0,1)}</span>
+                            <span class="badge badge-style">${item.style}</span>
+                        </span>
+                    </div>
+                    <div class="list-item-weight">
+                        ${item.weight} кг
+                        <span style="display:block; font-size:0.8rem; color:var(--text-muted);">повт/сек: ${item.reps}</span>
+                    </div>
+                `;
+                workoutList.appendChild(div);
+            });
+        }
+
+        datePicker.addEventListener('change', renderRecords);
+
+        workoutForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const newRecord = {
+                date: datePicker.value,
+                hand: document.getElementById('hand').value,
+                style: document.getElementById('style').value,
+                exercise: document.getElementById('exercise').value,
+                weight: parseFloat(document.getElementById('weight').value),
+                reps: parseInt(document.getElementById('reps').value)
+            };
+            db.push(newRecord);
+            localStorage.setItem('armgym_records', JSON.stringify(db));
+            document.getElementById('weight').value = '';
+            document.getElementById('reps').value = '';
+            renderRecords();
+        });
+
+        renderRecords();
+
+        // --- 3. ИНТЕРАКТИВНЫЙ СИМУЛЯТОР БОЯ (С РЕМНЯМИ) ---
+        const gameForm = document.getElementById('game-form');
+        const battleLog = document.getElementById('battle-log');
+        const battleCard = document.getElementById('battle-result-card');
+
+        gameForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            battleCard.style.display = 'block';
+            battleLog.innerHTML = '';
+
+            const p1 = {
+                style: document.getElementById('p1-style').value,
+                pron: parseFloat(document.getElementById('p1-pron').value),
+                ray: parseFloat(document.getElementById('p1-ray').value),
+                wrist: parseFloat(document.getElementById('p1-wrist').value),
+                side: parseFloat(document.getElementById('p1-side').value)
+            };
+
+            const p2 = {
+                style: document.getElementById('p2-style').value,
+                pron: parseFloat(document.getElementById('p2-pron').value),
+                ray: parseFloat(document.getElementById('p2-ray').value),
+                wrist: parseFloat(document.getElementById('p2-wrist').value),
+                side: parseFloat(document.getElementById('p2-side').value)
+            };
+
+            addLog("🟢 РАУНД 1: Свободный захват. READY... GO!", "white");
+
+            let p1Score = 0;
+            let p2Score = 0;
+
+            if (p1.style === "Верх") {
+                if (p1.ray + p1.pron > p2.wrist) {
+                    addLog("⚡ Спортсмен атакует верхом и выбивает кисть сопернику!", "yellow");
+                    p1Score += 2;
+                } else {
+                    addLog("🛡️ Соперник удержал кисть против атаки верхом.", "#a4b0be");
+                    p2Score += 1;
+                }
+            }
+
+            if (p2.style === "Крюк" || p2.style === "Клюшка") {
+                if (p2.wrist + p2.side > p1.pron) {
+                    addLog("🔄 Соперник успешно закручивает поединок в крюк!", "orange");
+                    p2Score += 2;
+                } else {
+                    addLog("🛡️ Спортсмен заблокировал попытку закрутить в крюк.", "#a4b0be");
+                    p1Score += 1;
+                }
+            }
+
+            if (p1.style === "Кингсмув") {
+                addLog("🩸 Спортсмен уходит в глубокую защиту (Кингсмув), растягивая угол.", "cyan");
+                p1Score += 1.5;
+            }
+
+            let p1Final = p1.side + (p1.wrist * 0.5) + (p1Score * 5);
+            let p2Final = p2.side + (p2.wrist * 0.5) + (p2Score * 5);
+
+            if (p1.style === "Трицепс") p1Final += p1.side * 0.3;
+            if (p2.style === "Трицепс") p2Final += p2.side * 0.3;
+
+            const isSlip = Math.abs(p1Final - p2Final) < 8 || Math.random() < 0.3;
+
+            setTimeout(() => {
+                if (isSlip) {
+                    addLog("⚠️ СРЫВ ЗАХВАТА! Судья останавливает поединок и связывает руки ремнями.", "#ff4757");
+                    
+                    setTimeout(() => {
+                        addLog("🎗️ РАУНД 2: Борьба в ремнях! Отведение заблокировано. READY... GO!", "white");
+                        
+                        let p1StrapPower = p1.side + p1.pron + (p1.wrist * 0.7);
+                        let p2StrapPower = p2.side + p2.pron + (p2.wrist * 0.7);
+
+                        if (p1.style === "Верх") {
+                            addLog("💪 В ремнях жесткая натяжка пронатора Спортсмена забирает центр!", "#a4b0be");
+                            p1StrapPower += p1.pron * 0.2;
+                        }
+                        if (p2.style === "Крюк" || p2.style === "Клюшка") {
+                            addLog("💥 Соперник пытается включить чистую силу бока в завязках!", "#a4b0be");
+                            p2StrapPower += p2.side * 0.2;
+                        }
+
+                        if (p1StrapPower > p2StrapPower) {
+                            addLog("🏆 ПОБЕДА СПОРТСМЕНА В РЕМНЯХ! Натяжка и бок оказались сильнее!", "log-win");
+                        } else if (p1StrapPower < p2StrapPower) {
+                            addLog("❌ ПОБЕДА СОПЕРНИКА В РЕМНЯХ. Ремень помог продавить боком.", "log-fail");
+                        } else {
+                            addLog("⚠️ Взаимный фол на подушке! Судья объявляет переигровку.", "yellow");
+                        }
+                    }, 1200);
+
+                } else {
+                    if (p1Final > p2Final) {
+                        addLog("🏆 ПОБЕДА СПОРТСМЕНА! Чистое припечатывание к подушке в первом раунде!", "log-win");
+                    } else {
+                        addLog("❌ ПОБЕДА СОПЕРНИКА. Боковое давление оказалось сильнее свободного захвата.", "log-fail");
+                    }
+                }
+            }, 600);
+        });
+
+        function addLog(text, classNameOrColor) {
+            const div = document.createElement('div');
+            div.className = 'log-entry';
+            if (classNameOrColor.startsWith('log-')) {
+                div.classList.add(classNameOrColor);
+            } else {
+                div.style.color = classNameOrColor;
+            }
+            div.textContent = text;
+            battleLog.appendChild(div);
+            battleLog.scrollTop = battleLog.scrollHeight;
+        }
+
+        // --- 4. ДИНАМИЧЕСКИЙ ПЛАН СГОНКИ ВЕСА (14 ДНЕЙ) ---
+        const weightPlanData = [
+            { day: 1, title: "Начало водно-солевой загрузки", desc: "Пейте 5-6 литров чистой воды в день. Соль употребляйте в привычном количестве. Легкая тренировка пампинга." },
+            { day: 2, title: "Водная загрузка продолжается", desc: "6 литров воды. Полностью убираем быстрые углеводы и сахарозу, оставляем только сложные угли (рис, гречка)." },
+            { day: 3, title: "Пик потребления воды", desc: "6-7 литров воды. Организм начинает активно выводить жидкость. Снижаем количество соли в рационе наполовину." },
+            { day: 4, title: "Начало снижения воды", desc: "Урезаем воду до 3 литров в день. Полный отказ от добавленной соли. Организм по инерции продолжает сливать воду." },
+            { day: 5, title: "Минимум воды и углеводная яма", desc: "Всего 1.5 литра воды в день. Снижаем углеводы до 50г в день. Рацион состоит из белков (куриное филе, яйца)." },
+            { day: 6, title: "Жесткое ограничение", desc: "1 литр воды в день. Исключаем клетчатку (овощи), чтобы очистить ЖКТ и убрать лишний внутренний вес." },
+            { day: 7, title: "Экватор сгонки", desc: "0.5 литра воды. Организм сбрасывает вес за счет гликогена. Контролируйте самочувствие и пульс." },
+            { day: 8, title: "Проверка веса", desc: "0.5 литра воды в день. Питание минимальными порциями. Вся еда должна быть сухой." },
+            { day: 9, title: "Фокус на калии", desc: "Добавьте в рацион продукты богатые калием (курага, запеченный картофель без соли), чтобы выгнать подкожную воду." },
+            { day: 10, title: "Сушка связок и мышц", desc: "Не более 400 мл воды за день. Тренировки исключены, только легкие прогулки на свежем воздухе." },
+            { day: 11, title: "Критическая фаза", desc: "Только глотки воды при сильной жажде. Полное отсутствие углеводов." },
+            { day: 12, title: "Выведение остатков", desc: "При необходимости — горячая ванна с солью Эпсома или кратковременное посещение сауны (не более 10-15 мин)." },
+            { day: 13, title: "День перед взвешиванием", desc: "Полный отказ от воды и еды со второй половины дня. Контрольное взвешивание дома вечером." },
+            { day: 14, title: "Взвешивание и Суперкомпенсация", desc: "После весов: сначала регидратация (изотоник, вода с минералами небольшими глотками), затем загрузка сложными углеводами!" }
+        ];
+
+        const weightContainer = document.getElementById('weight-plan-container');
+        let weightProgress = JSON.parse(localStorage.getItem('armgym_weight_progress')) || {};
+
+        weightPlanData.forEach(d => {
+            const isChecked = weightProgress[d.day] ? 'checked' : '';
+            const div = document.createElement('div');
+            div.className = `weight-day ${isChecked ? 'completed' : ''}`;
+            div.id = `weight-day-${d.day}`;
+            div.innerHTML = `
+                <input type="checkbox" data-day="${d.day}" ${isChecked}>
+                <div class="weight-day-text">
+                    <h3>День ${d.day}: ${d.title}</h3>
+                    <p>${d.desc}</p>
+                </div>
+            `;
+            weightContainer.appendChild(div);
+        });
+
+        weightContainer.querySelectorAll('input[type="checkbox"]').forEach(box => {
+            box.addEventListener('change', (e) => {
+                const day = e.target.getAttribute('data-day');
+                const card = document.getElementById(`weight-day-${day}`);
+                if (e.target.checked) {
+                    card.classList.add('completed');
+                    weightProgress[day] = true;
+                } else {
+                    card.classList.remove('completed');
+                    delete weightProgress[day];
+                }
+                localStorage.setItem('armgym_weight_progress', JSON.stringify(weightProgress));
+            });
+        });
+
+        // --- 5. КАЛЕНДАРЬ СОРЕВНОВАНИЙ НА 2026 ГОД ---
+        const eventsData = [
+            { date: "2026-02-14", name: "Зимний Кубок AMC Armwrestling", loc: "Москва, Россия" },
+            { date: "2026-03-20", name: "Чемпионат России по армрестлингу", loc: "Санкт-Петербург" },
+            { date: "2026-05-15", name: "Чемпионат Европы (WAF)", loc: "Бухарест, Румыния" },
+            { date: "2026-07-04", name: "Турнир TOP-8 / Игры Непокоренных", loc: "Дубай, ОАЭ" },
+            { date: "2026-09-12", name: "Чемпионат Мира по армрестлингу 2026", loc: "Астана, Казахстан" },
+            { date: "2026-11-21", name: "Международный турнир Золотой Тур", loc: "Румия, Польша" }
+        ];
+
+        const eventsTableBody = document.getElementById('events-table-body');
+        const currentDate = new Date();
+
+        eventsData.forEach(ev => {
+            const evDate = new Date(ev.date);
+            const isPassed = evDate < currentDate;
+            
+            const options = { day: 'numeric', month: 'short', year: 'numeric' };
+            const formattedDate = evDate.toLocaleDateString('ru-RU', options);
+            
+            const statusText = isPassed ? "Завершено" : "Ожидается";
+            const statusClass = isPassed ? "status-passed" : "status-upcoming";
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="font-weight:bold; color:var(--accent); white-space:nowrap;">${formattedDate}</td>
+                <td><strong>${ev.name}</strong><br><span style="font-size:0.8rem; color:var(--text-muted);">${ev.loc}</span></td>
+                <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+            `;
+            eventsTableBody.appendChild(tr);
+        });
+
+        // --- 6. СЕКУНДОМЕР ---
+        let timerInterval = null;
+        let startTime = 0;
+        let elapsedTime = 0;
+        let isRunning = false;
+
+        const timerDisplay = document.getElementById('timer-display');
+        const btnStartStop = document.getElementById('btn-start-stop');
+        const btnReset = document.getElementById('btn-reset');
+
+        function updateTime() {
+            const now = performance.now();
+            const diff = elapsedTime + (now - startTime);
+            const minutes = Math.floor(diff / 60000);
+            const seconds = Math.floor((diff % 60000) / 1000);
+            const milliseconds = Math.floor((diff % 1000) / 10);
+
+            timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(milliseconds).padStart(2, '0')}`;
+        }
+
+        btnStartStop.addEventListener('click', () => {
+            if (!isRunning) {
+                isRunning = true;
+                btnStartStop.textContent = 'Стоп';
+                btnStartStop.style.backgroundColor = '#747d8c';
+                startTime = performance.now();
+                timerInterval = setInterval(updateTime, 10);
+            } else {
+                isRunning = false;
+                btnStartStop.textContent = 'Старт';
+                btnStartStop.style.backgroundColor = 'var(--primary)';
+                elapsedTime += performance.now() - startTime;
+                clearInterval(timerInterval);
+            }
+        });
+
+        btnReset.addEventListener('click', () => {
+            clearInterval(timerInterval);
+            isRunning = false;
+            elapsedTime = 0;
+            startTime = 0;
+            btnStartStop.textContent = 'Старт';
+            btnStartStop.style.backgroundColor = 'var(--primary)';
+            timerDisplay.textContent = '00:00.00';
+        });
+    </script>
+</body>
+</html>

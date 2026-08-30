@@ -4,15 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ArmGym Tracker — Приложение для Армрестлеров</title>
-    
-    <!-- Подключение манифеста для поддержки PWA (установки на телефон/ПК) -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#121214">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <!-- ИКОНКА ПРИЛОЖЕНИЯ (FAVICON) -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💪</text></svg>">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
     
     <style>
         :root {
@@ -326,7 +321,7 @@
             padding: 10px;
             border-radius: 6px;
             font-family: monospace;
-            max-height: 250px;
+            max-height: 200px;
             overflow-y: auto;
             font-size: 0.85rem;
             border: 1px solid var(--border);
@@ -409,12 +404,14 @@
     <!-- ИНДИКАТОР ВЛАДЕЛЬЦА СВЕРХУ -->
     <div class="owner-badge">&copy; 2026 Разработано &amp; Принадлежит Танкееву Всеволоду. Все права защищены.</div>
 
+
     <header>
         <h1>ArmGym <span>Tracker</span></h1>
     </header>
 
     <!-- ВЕРХНЕЕ МЕСТО ДЛЯ РЕКЛАМЫ -->
     <div class="ad-space">
+        <!-- Код вашей рекламы будет здесь -->
         Место для рекламы (Верхний баннер)
     </div>
 
@@ -581,6 +578,7 @@
 
     <!-- НИЖНЕЕ ФИКСИРОВАННОЕ МЕСТО ДЛЯ РЕКЛАМЫ -->
     <div class="ad-bottom-fixed">
+        <!-- Код вашей рекламы будет здесь -->
         Рекламный блок (sevatankarm network)
     </div>
 
@@ -594,37 +592,59 @@
     </div>
 
     <script>
-        // --- РЕГИСТРАЦИЯ SERVICE WORKER (ОФЛАЙН РЕЖИМ ПРИ ЗАПУСКЕ НА СЕРВЕРЕ/ХОСТИНГЕ) ---
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('Service Worker успешно зарегистрирован!', reg.scope))
-                    .catch(err => console.log('Ошибка регистрации Service Worker:', err));
-            });
-        }
-
-        // --- 1. НАВИГАЦИЯ ---
+        // --- 1. НАВИГАЦИЯ И ОБРАБОТКА ХЭШЕЙ ДЛЯ SHORTCUTS ---
         const navItems = document.querySelectorAll('.nav-item');
         const pages = document.querySelectorAll('.page');
 
-        navItems.forEach(item => {
-            item.addEventListener('click', () => {
+        function activatePage(pageId) {
+            const targetItem = document.querySelector(`[data-page="${pageId}"]`);
+            const targetPage = document.getElementById(pageId);
+            
+            if (targetItem && targetPage) {
                 navItems.forEach(nav => nav.classList.remove('active'));
                 pages.forEach(page => page.classList.remove('active'));
 
-                item.classList.add('active');
+                targetItem.classList.add('active');
+                targetPage.classList.add('active');
+                window.scrollTo(0, 0);
+            }
+        }
+
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
                 const pageId = item.getAttribute('data-page');
-                document.getElementById(pageId).classList.add('active');
+                activatePage(pageId);
+                // Обновляем хэш в URL без перезагрузки страницы
+                history.pushState(null, null, '#' + pageId);
             });
         });
+
+        // Обработка глубоких ссылок и shortcuts при загрузке и смене хэша
+        function checkUrlHash() {
+            const hash = window.location.hash;
+            if (hash === '#page-game') {
+                activatePage('page-game');
+            } else if (hash === '#page-timer') {
+                activatePage('page-timer');
+            } else if (hash === '#page-weight') {
+                activatePage('page-weight');
+            } else if (hash === '#page-events') {
+                activatePage('page-events');
+            } else {
+                activatePage('page-workout');
+            }
+        }
+
+        window.addEventListener('load', checkUrlHash);
+        window.addEventListener('hashchange', checkUrlHash);
 
         // --- 2. КАЛЕНДАРЬ И ЛОКАЛЬНАЯ БАЗА ТРЕНИРОВОК ---
         const datePicker = document.getElementById('date-picker');
         const workoutForm = document.getElementById('workout-form');
         const workoutList = document.getElementById('workout-list');
 
-        const today = new Date().toISOString().split('T')[0];
-        datePicker.value = today;
+        const today = new Date().toISOString().split('T');
+        datePicker.value = today[0];
 
         let db = JSON.parse(localStorage.getItem('armgym_records')) || [];
 
@@ -676,11 +696,18 @@
             document.getElementById('weight').value = '';
             document.getElementById('reps').value = '';
             renderRecords();
+            
+            // Триггер фоновой синхронизации, если она доступна
+            if ('serviceWorker' in navigator && 'SyncManager' in window) {
+                navigator.serviceWorker.ready.then(reg => {
+                    return reg.sync.register('sync-workout-database');
+                }).catch(err => console.log('Ошибка регистрации фоновой синхронизации:', err));
+            }
         });
 
         renderRecords();
 
-        // --- 3. ИНТЕРАКТИВНЫЙ СИМУЛЯТОР БОЯ (С РЕМНЯМИ) ---
+        // --- 3. ИНТЕРАКТИВНЫЙ СИМУЛЯТОР БОЯ ---
         const gameForm = document.getElementById('game-form');
         const battleLog = document.getElementById('battle-log');
         const battleCard = document.getElementById('battle-result-card');
@@ -706,7 +733,7 @@
                 side: parseFloat(document.getElementById('p2-side').value)
             };
 
-            addLog("🟢 РАУНД 1: Свободный захват. READY... GO!", "white");
+            addLog("🟢 Команда судьи: READY... GO!", "white");
 
             let p1Score = 0;
             let p2Score = 0;
@@ -716,7 +743,7 @@
                     addLog("⚡ Спортсмен атакует верхом и выбивает кисть сопернику!", "yellow");
                     p1Score += 2;
                 } else {
-                    addLog("🛡️ Соперник удержал кисть против атаки верхом.", "#a4b0be");
+                    addLog("🛡️ Соперник удержал кисть против атаки верхом.", "var(--text-muted)");
                     p2Score += 1;
                 }
             }
@@ -726,7 +753,7 @@
                     addLog("🔄 Соперник успешно закручивает поединок в крюк!", "orange");
                     p2Score += 2;
                 } else {
-                    addLog("🛡️ Спортсмен заблокировал попытку закрутить в крюк.", "#a4b0be");
+                    addLog("🛡️ Спортсмен заблокировал попытку закрутить в крюк.", "var(--text-muted)");
                     p1Score += 1;
                 }
             }
@@ -742,44 +769,15 @@
             if (p1.style === "Трицепс") p1Final += p1.side * 0.3;
             if (p2.style === "Трицепс") p2Final += p2.side * 0.3;
 
-            const isSlip = Math.abs(p1Final - p2Final) < 8 || Math.random() < 0.3;
-
             setTimeout(() => {
-                if (isSlip) {
-                    addLog("⚠️ СРЫВ ЗАХВАТА! Судья останавливает поединок и связывает руки ремнями.", "#ff4757");
-                    
-                    setTimeout(() => {
-                        addLog("🎗️ РАУНД 2: Борьба в ремнях! Отведение заблокировано. READY... GO!", "white");
-                        
-                        let p1StrapPower = p1.side + p1.pron + (p1.wrist * 0.7);
-                        let p2StrapPower = p2.side + p2.pron + (p2.wrist * 0.7);
-
-                        if (p1.style === "Верх") {
-                            addLog("💪 В ремнях жесткая натяжка пронатора Спортсмена забирает центр!", "#a4b0be");
-                            p1StrapPower += p1.pron * 0.2;
-                        }
-                        if (p2.style === "Крюк" || p2.style === "Клюшка") {
-                            addLog("💥 Соперник пытается включить чистую силу бока в завязках!", "#a4b0be");
-                            p2StrapPower += p2.side * 0.2;
-                        }
-
-                        if (p1StrapPower > p2StrapPower) {
-                            addLog("🏆 ПОБЕДА СПОРТСМЕНА В РЕМНЯХ! Натяжка и бок оказались сильнее!", "log-win");
-                        } else if (p1StrapPower < p2StrapPower) {
-                            addLog("❌ ПОБЕДА СОПЕРНИКА В РЕМНЯХ. Ремень помог продавить боком.", "log-fail");
-                        } else {
-                            addLog("⚠️ Взаимный фол на подушке! Судья объявляет переигровку.", "yellow");
-                        }
-                    }, 1200);
-
+                if (p1Final > p2Final) {
+                    addLog("🏆 ПОБЕДА СПОРТСМЕНА! Чистое припечатывание к подушке!", "log-win");
+                } else if (p1Final === p2Final) {
+                    addLog("⚠️ Срыв захвата! Судья назначает связки.", "yellow");
                 } else {
-                    if (p1Final > p2Final) {
-                        addLog("🏆 ПОБЕДА СПОРТСМЕНА! Чистое припечатывание к подушке в первом раунде!", "log-win");
-                    } else {
-                        addLog("❌ ПОБЕДА СОПЕРНИКА. Боковое давление оказалось сильнее свободного захвата.", "log-fail");
-                    }
+                    addLog("❌ ПОБЕДА СОПЕРНИКА. Боковое давление оказалось сильнее.", "log-fail");
                 }
-            }, 600);
+            }, 400);
         });
 
         function addLog(text, classNameOrColor) {
@@ -923,6 +921,39 @@
             btnStartStop.style.backgroundColor = 'var(--primary)';
             timerDisplay.textContent = '00:00.00';
         });
+
+        // --- 7. РЕГИСТРАЦИЯ SERVICE WORKER И СИСТЕМНЫХ API (Push, Periodic Sync) ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').then(async (reg) => {
+                    console.log('Service Worker успешно активирован!');
+
+                    // Запрос прав на системные Push-уведомления
+                    if ('Notification' in window) {
+                        try {
+                            const permission = await Notification.requestPermission();
+                            if (permission === 'granted') {
+                                console.log('Доступ к уведомлениям разрешен!');
+                            }
+                        } catch (err) {
+                            console.log('Ошибка при запросе прав на уведомления:', err);
+                        }
+                    }
+
+                    // Регистрация периодической фоновой синхронизации календаря соревнований (раз в 24 часа)
+                    if ('periodicSync' in reg) {
+                        try {
+                            await reg.periodicSync.register('update-events-calendar', {
+                                minInterval: 24 * 60 * 60 * 1000 
+                            });
+                            console.log('Периодическая фоновая синхронизация календаря настроена!');
+                        } catch (error) {
+                            console.log('Периодическая синхронизация отклонена системой или браузером.');
+                        }
+                    }
+                }).catch(err => console.log('Ошибка регистрации SW:', err));
+            });
+        }
     </script>
 </body>
 </html>

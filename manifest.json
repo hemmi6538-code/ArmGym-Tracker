@@ -9,19 +9,12 @@
   "scope": "/ArmGym-Tracker/",
   "scope_extensions": [],
   "start_url": "index.html",
-  "display": "standalone",
-  "display_override": [
-    "window-controls-overlay",
-    "standalone",
-    "minimal-ui"
-  ],
+  "display": "tabbed",
+  "display_override": ["tabbed", "window-controls-overlay", "standalone", "minimal-ui"],
   "background_color": "#121214",
   "theme_color": "#ff4757",
-  "categories": [
-    "sports",
-    "utilities"
-  ],
-  "iarc_rating_id": "",
+  "categories": ["sports", "utilities"],
+  "iarc_rating_id": "0",
   "prefer_related_applications": false,
   "related_applications": [],
   "file_handlers": [],
@@ -48,10 +41,7 @@
     "preferred_width": 400
   },
   "launch_handler": {
-    "client_mode": [
-      "focus-existing",
-      "navigate-new"
-    ]
+    "client_mode": ["focus-existing", "navigate-new"]
   },
   "icons": [
     {
@@ -67,30 +57,36 @@
       "purpose": "any"
     }
   ],
+  "screenshots": [
+    {
+      "src": "screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Мобильный интерфейс трекера"
+    },
+    {
+      "src": "screenshot-desktop.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Десктопная версия трекера"
+    }
+  ],
   "shortcuts": [
     {
       "name": "Симулятор боя",
       "short_name": "Бой",
       "description": "Быстрый переход к симулятору поединка по армрестлингу",
       "url": "index.html#page-game",
-      "icons": [
-        {
-          "src": "icon-192.png",
-          "sizes": "192x192"
-        }
-      ]
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
     },
     {
       "name": "Секундомер статики",
       "short_name": "Таймер",
       "description": "Запуск высокоточного таймера удержания углов",
       "url": "index.html#page-timer",
-      "icons": [
-        {
-          "src": "icon-192.png",
-          "sizes": "192x192"
-        }
-      ]
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
     }
   ]
 }

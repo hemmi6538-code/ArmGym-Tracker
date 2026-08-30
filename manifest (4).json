@@ -1,0 +1,76 @@
+{
+  "id": "/armgym-tracker-app",
+  "name": "ArmGym Tracker",
+  "short_name": "ArmGym",
+  "description": "Профессиональный трекер для армрестлеров: запись тренировочных подходов по специализированным векторам, интерактивный симулятор поединков, экспертный 14-дневный план сгонки веса и высокоточный таймер статического удержания углов.",
+  "lang": "ru",
+  "dir": "ltr",
+  "orientation": "portrait",
+  "scope": "/ArmGym-Tracker/",
+  "scope_extensions": [],
+  "start_url": "index.html",
+  "display": "tabbed",
+  "display_override": ["tabbed", "window-controls-overlay", "standalone", "minimal-ui"],
+  "background_color": "#121214",
+  "theme_color": "#ff4757",
+  "categories": ["sports", "utilities"],
+  "iarc_rating_id": "",
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "file_handlers": [],
+  "protocol_handlers": [
+    {
+      "protocol": "web+armgym",
+      "url": "index.html?protocol=%s"
+    }
+  ],
+  "share_target": {
+    "action": "index.html",
+    "method": "GET",
+    "params": {
+      "title": "share_title",
+      "text": "share_text",
+      "url": "share_url"
+    }
+  },
+  "note_taking": {
+    "new_note_url": "index.html#page-workout"
+  },
+  "widgets": [],
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "launch_handler": {
+    "client_mode": ["focus-existing", "navigate-new"]
+  },
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Симулятор боя",
+      "short_name": "Бой",
+      "description": "Быстрый переход к симулятору поединка по армрестлингу",
+      "url": "index.html#page-game",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Секундомер статики",
+      "short_name": "Таймер",
+      "description": "Запуск высокоточного таймера удержания углов",
+      "url": "index.html#page-timer",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

@@ -7,7 +7,7 @@
     <link rel="manifest" href="manifest.json">
 
     <!-- ИКОНКА ПРИЛОЖЕНИЯ (FAVICON) -->
-    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💪</text></svg>">
     
     <style>
         :root {
@@ -36,6 +36,7 @@
             padding-bottom: 160px;
         }
 
+        /* ПЛАШКА ВЛАДЕЛЬЦА SEVATANKARM */
         .owner-badge {
             background-color: #0f0f12;
             color: var(--accent);
@@ -66,6 +67,7 @@
             color: var(--primary);
         }
 
+        /* БЛОКИ ДЛЯ РЕКЛАМЫ */
         .ad-space {
             background-color: #1a1a1f;
             border: 2px dashed #3a3a45;
@@ -215,6 +217,7 @@
         .badge-right { background-color: #2ecc71; color: white; }
         .badge-style { background-color: #9b59b6; color: white; }
 
+        /* ТАЙМЕР */
         .timer-display {
             font-size: 3rem;
             text-align: center;
@@ -233,6 +236,7 @@
             background-color: #747d8c;
         }
 
+        /* НАВИГАЦИЯ */
         .nav-bar {
             position: fixed;
             bottom: 0;
@@ -294,6 +298,7 @@
             padding: 10px 0;
         }
 
+        /* МИНИ-ИГРА */
         .game-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -330,6 +335,7 @@
         .log-win { color: var(--win-color); font-weight: bold; }
         .log-fail { color: var(--primary); font-weight: bold; }
 
+        /* СГОНКА ВЕСА */
         .weight-day {
             background-color: #2f3542;
             padding: 12px;
@@ -365,6 +371,7 @@
             line-height: 1.3;
         }
 
+        /* КАЛЕНДАРЬ СОРЕВНОВАНИЙ */
         .comp-table {
             width: 100%;
             border-collapse: collapse;
@@ -394,13 +401,17 @@
 </head>
 <body>
 
+    <!-- ИНДИКАТОР ВЛАДЕЛЬЦА СВЕРХУ -->
     <div class="owner-badge">&copy; 2026 Разработано &amp; Принадлежит Танкееву Всеволоду. Все права защищены.</div>
+
 
     <header>
         <h1>ArmGym <span>Tracker</span></h1>
     </header>
 
+    <!-- ВЕРХНЕЕ МЕСТО ДЛЯ РЕКЛАМЫ -->
     <div class="ad-space">
+        <!-- Код вашей рекламы будет здесь -->
         Место для рекламы (Верхний баннер)
     </div>
 
@@ -565,10 +576,13 @@
         </div>
     </div>
 
+    <!-- НИЖНЕЕ ФИКСИРОВАННОЕ МЕСТО ДЛЯ РЕКЛАМЫ -->
     <div class="ad-bottom-fixed">
+        <!-- Код вашей рекламы будет здесь -->
         Рекламный блок (sevatankarm network)
     </div>
 
+    <!-- НАВИГАЦИЯ -->
     <div class="nav-bar">
         <div class="nav-item active" data-page="page-workout"><span>🏋️‍♂️</span>Трен</div>
         <div class="nav-item" data-page="page-game"><span>🖐️</span>Бой</div>
@@ -578,58 +592,28 @@
     </div>
 
     <script>
-        // --- НАВИГАЦИЯ ---
+        // --- 1. НАВИГАЦИЯ ---
         const navItems = document.querySelectorAll('.nav-item');
         const pages = document.querySelectorAll('.page');
 
-        function switchPage(pageId) {
-            navItems.forEach(nav => {
-                if(nav.getAttribute('data-page') === pageId) {
-                    nav.classList.add('active');
-                } else {
-                    nav.classList.remove('active');
-                }
-            });
-            pages.forEach(page => {
-                if(page.id === pageId) {
-                    page.classList.add('active');
-                } else {
-                    page.classList.remove('active');
-                }
-            });
-        }
-
         navItems.forEach(item => {
             item.addEventListener('click', () => {
+                navItems.forEach(nav => nav.classList.remove('active'));
+                pages.forEach(page => page.classList.remove('active'));
+
+                item.classList.add('active');
                 const pageId = item.getAttribute('data-page');
-                switchPage(pageId);
-                window.location.hash = pageId;
+                document.getElementById(pageId).classList.add('active');
             });
         });
 
-        // Обработка shortcuts (ярлыков ОС)
-        window.addEventListener('load', () => {
-            if(window.location.hash) {
-                const hashPage = window.location.hash.replace('#', '');
-                if(document.getElementById(hashPage)) {
-                    switchPage(hashPage);
-                }
-            }
-        });
-        window.addEventListener('hashchange', () => {
-            const hashPage = window.location.hash.replace('#', '');
-            if(document.getElementById(hashPage)) {
-                switchPage(hashPage);
-            }
-        });
-
-        // --- КАЛЕНДАРЬ И БАЗА ТРЕНИРОВОК ---
+        // --- 2. КАЛЕНДАРЬ И ЛОКАЛЬНАЯ БАЗА ТРЕНИРОВОК ---
         const datePicker = document.getElementById('date-picker');
         const workoutForm = document.getElementById('workout-form');
         const workoutList = document.getElementById('workout-list');
 
         const today = new Date().toISOString().split('T');
-        datePicker.value = today[0];
+        datePicker.value = today;
 
         let db = JSON.parse(localStorage.getItem('armgym_records')) || [];
 
@@ -678,14 +662,6 @@
             };
             db.push(newRecord);
             localStorage.setItem('armgym_records', JSON.stringify(db));
-            
-            // Фоновая синхронизация, если доступна в браузере
-            if ('serviceWorker' in navigator && 'SyncManager' in window) {
-                navigator.serviceWorker.ready.then(reg => {
-                    return reg.sync.register('sync-workout-database');
-                }).catch(err => console.log('Синхронизация отложена', err));
-            }
-
             document.getElementById('weight').value = '';
             document.getElementById('reps').value = '';
             renderRecords();
@@ -693,7 +669,7 @@
 
         renderRecords();
 
-        // --- СИМУЛЯТОР БОЯ ---
+        // --- 3. ИНТЕРАКТИВНЫЙ СИМУЛЯТОР БОЯ ---
         const gameForm = document.getElementById('game-form');
         const battleLog = document.getElementById('battle-log');
         const battleCard = document.getElementById('battle-result-card');
@@ -779,7 +755,7 @@
             battleLog.scrollTop = battleLog.scrollHeight;
         }
 
-        // --- ДЛИТЕЛЬНЫЙ ПЛАН СГОНКИ ВЕСА (14 ДНЕЙ) ---
+        // --- 4. ДИНАМИЧЕСКИЙ ПЛАН СГОНКИ ВЕСА (14 ДНЕЙ) ---
         const weightPlanData = [
             { day: 1, title: "Начало водно-солевой загрузки", desc: "Пейте 5-6 литров чистой воды в день. Соль употребляйте в привычном количестве. Легкая тренировка пампинга." },
             { day: 2, title: "Водная загрузка продолжается", desc: "6 литров воды. Полностью убираем быстрые углеводы и сахарозу, оставляем только сложные угли (рис, гречка)." },
@@ -830,7 +806,7 @@
             });
         });
 
-        // --- КАЛЕНДАРЬ СОРЕВНОВАНИЙ НА 2026 ГОД ---
+        // --- 5. КАЛЕНДАРЬ СОРЕВНОВАНИЙ НА 2026 ГОД ---
         const eventsData = [
             { date: "2026-02-14", name: "Зимний Кубок AMC Armwrestling", loc: "Москва, Россия" },
             { date: "2026-03-20", name: "Чемпионат России по армрестлингу", loc: "Санкт-Петербург" },
@@ -862,7 +838,7 @@
             eventsTableBody.appendChild(tr);
         });
 
-        // --- СЕКУНДОМЕР ---
+        // --- 6. СЕКУНДОМЕР ---
         let timerInterval = null;
         let startTime = 0;
         let elapsedTime = 0;
@@ -907,37 +883,6 @@
             btnStartStop.style.backgroundColor = 'var(--primary)';
             timerDisplay.textContent = '00:00.00';
         });
-
-        // --- ИНИЦИАЛИЗАЦИЯ И РЕГИСТРАЦИЯ PWA СЕРВИСОВ ---
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/ArmGym-Tracker/sw.js', { scope: '/ArmGym-Tracker/' })
-                    .then(async (reg) => {
-                        console.log('Service Worker успешно зарегистрирован!', reg);
-
-                        // Запрос прав на всплывающие пуш-уведомления
-                        if ('Notification' in window) {
-                            const permission = await Notification.requestPermission();
-                            if (permission === 'granted') {
-                                console.log('Доступ к уведомлениям получен.');
-                            }
-                        }
-
-                        // Регистрация периодической синхронизации расписания (раз в сутки)
-                        if ('periodicSync' in reg) {
-                            try {
-                                await reg.periodicSync.register('update-events-calendar', {
-                                    minInterval: 24 * 60 * 60 * 1000
-                                });
-                                console.log('Периодическая фоновая синхронизация активирована.');
-                            } catch (error) {
-                                console.log('Периодическая синхронизация недоступна в текущем окружении.');
-                            }
-                        }
-                    })
-                    .catch(err => console.log('Ошибка регистрации Service Worker:', err));
-            });
-        }
     </script>
 </body>
 </html>

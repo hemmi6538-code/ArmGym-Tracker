@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.hemmi6538.armgym",
+      "sha256_cert_fingerprints": [
+        "B0:88:EC:EB:40:60:E5:A9:72:42:04:DE:6F:05:8D:18:6B:DB:DF:B6:59:E7:0F:D0:6B:BC:2A:06:85:4C:E6:B2"
+      ]
+    }
+  }
+]

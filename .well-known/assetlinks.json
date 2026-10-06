@@ -3,6 +3,6 @@
       "target": {
         "namespace": "android_app",
         "package_name": "io.github.hemmi6538_code.twa",
-        "sha256_cert_fingerprints": ["15:52:1D:CE:0E:64:89:D2:DF:D3:5F:A7:D5:70:E7:F4:74:96:A8:CC:1C:CE:F5:BD:72:42:DE:0F:7B:3F:8F:D0"]
+        "sha256_cert_fingerprints": ["6E:D3:3E:11:35:74:0C:85:B5:0A:56:8F:9F:2B:5F:E4:D1:8F:01:C7:47:90:98:C1:CF:A0:EA:D4:C9:D7:7B:54"]
       }
     }]

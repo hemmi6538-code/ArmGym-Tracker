@@ -1,8 +1,0 @@
-[{
-      "relation": ["delegate_permission/common.handle_all_urls"],
-      "target": {
-        "namespace": "android_app",
-        "package_name": "io.github.hemmi6538_code.twa",
-        "sha256_cert_fingerprints": ["15:52:1D:CE:0E:64:89:D2:DF:D3:5F:A7:D5:70:E7:F4:74:96:A8:CC:1C:CE:F5:BD:72:42:DE:0F:7B:3F:8F:D0"]
-      }
-    }]
